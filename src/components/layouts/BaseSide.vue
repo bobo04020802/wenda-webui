@@ -8,7 +8,7 @@
   >
     <div style="padding: 40px 0px 40px 30px; width: 300px">
       <div style="display: flex; justify-content: flex-start">
-        <el-text style="font-size: 20px; font-weight: bolder"> 闻 达 </el-text>
+        <el-text style="font-size: 20px; font-weight: bolder"> BERHELEY </el-text>
       </div>
       <div style="display: flex; justify-content: flex-start">
         <el-text style="font-size: 15px; opacity: 0.5">

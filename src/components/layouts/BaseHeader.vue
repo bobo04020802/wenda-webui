@@ -12,8 +12,8 @@ const about = () => {
 
   ElMessageBox.alert(
     `
-  本项目是专为 <a href="https://github.com/l15y/wenda" target="_blank">闻达</a> 设计的webui。<br>
-  本项目git地址： <a href="https://github.com/AlanLee1996/wenda-webui" target="_blank">wenda-webui</a>
+  本项目是专为 <a href="https://github.com/bobo04020802/berheley_LLM" target="_blank">BerheleyLLM</a> 设计的webui。<br>
+  本项目git地址： <a href="https://github.com/bobo04020802/wenda-webui" target="_blank">berheley-webui</a>
   `,
     "关于本项目",
     {
