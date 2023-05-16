@@ -19,16 +19,35 @@
       </div>
     </div>
 
-    <div style="position: absolute; opacity: 1; top: 0px; right: 0px">
-      <!-- <Logo :width="80" :height="80" :color="isDark ? 'white' : 'black'" /> -->
+    <!-- 机器人logo -->
+    <div
+      style="position: absolute; opacity: 1; top: 0px; right: 0px"
+      v-if="!isMobile"
+    >
       <img
-        src="/robot.jpg"
+        :src="imgRobot"
         alt=""
         style="width: 120px; mix-blend-mode: multiply"
       />
     </div>
+
+    <!-- 移动端菜单展开才会显示按钮 -->
+    <div
+      @click="toggleSide()"
+      style="width: 60px; position: absolute; top: 0px; right: 0px"
+      v-if="isMobile && showSide"
+    >
+      <button
+        class="border-none w-full bg-transparent cursor-pointer"
+        style="height: var(--ep-menu-item-height); padding-top: 8px"
+      >
+        <i inline-flex i="ep-close" v-if="showSide" />
+        <i inline-flex i="ep-operation" v-if="!showSide" />
+      </button>
+    </div>
+
     <el-scrollbar
-      style="padding: 0px 20px 10px 20px; height: calc(100vh - 210px)"
+      style="padding: 0px 20px 10px 20px; height: calc(100% - 210px)"
     >
       <div
         v-for="conversation in conversationList"
@@ -116,11 +135,17 @@
 </template>
 
 <script lang="ts" setup>
+import imgRobot from "~/assets/robot.jpg";
+
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useChatStore } from "~/store/chat";
 import { useDark, useToggle } from "@vueuse/core";
 import { relative } from "path";
+
+import { useAppStore } from "~/store/app";
+let appStore = useAppStore();
+const { showSide, isMobile } = storeToRefs(appStore);
 
 const isDark = useDark();
 
@@ -146,6 +171,11 @@ const getConversationHistoryCount = (conversationId: string) => {
     return message.conversationId == conversationId;
   });
   return msgList[0].history.length;
+};
+const toggleSide = () => {
+  console.log(appStore.showSide);
+
+  appStore.showSide = !appStore.showSide;
 };
 </script>
 <style lang="scss"></style>

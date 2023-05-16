@@ -1,8 +1,11 @@
 <script setup lang="ts">
+import imgAi from "~/assets/head.png";
+
 import { ref, reactive, toRefs, defineProps, onMounted } from "vue";
 import axios from "axios";
 import { ElMessage, ElNotification } from "element-plus";
 import { useChatStore } from "~/store/chat";
+import { useAppStore } from "~/store/app";
 import { storeToRefs } from "pinia";
 import { useDark, useToggle } from "@vueuse/core";
 import { nanoid } from "nanoid";
@@ -20,11 +23,12 @@ const copy = async (content: string) => {
 };
 
 const isDark = useDark();
-const AI_AVATAR = ref(import.meta.env.VITE_AI_AVATAR);
 
 let chatStore = useChatStore();
 const { conversationList, messageList, activeConversationId } =
   storeToRefs(chatStore);
+let appStore = useAppStore();
+const { showSide, isMobile } = storeToRefs(appStore);
 
 const props = defineProps({
   conversationId: {
@@ -355,7 +359,7 @@ const copyLastMessage = () => {
                     :color="isDark ? 'white' : 'black'"
                   /> -->
                   <img
-                    :src="AI_AVATAR"
+                    :src="imgAi"
                     alt=""
                     style="width: 25px; mix-blend-mode: multiply"
                     :style="{
@@ -365,12 +369,12 @@ const copyLastMessage = () => {
                 </div>
                 <el-card
                   shadow="hover"
-                  style="
-                    max-width: calc((100vw - 100px) / 2);
-                    padding: 0px !important;
-                  "
+                  style="padding: 0px !important"
                   :style="{
                     backgroundColor: getMsgBackColor(message.role),
+                    maxWidth: isMobile
+                      ? 'calc(100vw - 100px)'
+                      : 'calc((100vw - 100px) / 2)',
                   }"
                   :body-style="{
                     padding: '5px',
@@ -438,7 +442,10 @@ const copyLastMessage = () => {
       </transition>
     </div>
   </el-scrollbar>
-  <div style="position: fixed; width: calc(100% - 350px); bottom: 10px">
+  <div
+    style="position: fixed; bottom: 10px"
+    :style="{ width: showSide ? 'calc(100% - 350px)' : 'calc(100% - 50px)' }"
+  >
     <el-input
       :rows="4"
       type="textarea"
