@@ -382,6 +382,7 @@ const copyLastMessage = () => {
                     style="background-color: transparent"
                   ></v-md-preview>
                   <div
+                      v-if="message.source || message.source? message.source.length>0 : false"
                     style="
                       width: 100%;
                       display: flex;
@@ -389,6 +390,12 @@ const copyLastMessage = () => {
                       flex-wrap: wrap;
                     "
                   >
+                    <el-table :data="message.source"  style="width: 100%" :header-cell-style="{ background: '#0080D0', color:'#000000'}">
+                      <el-table-column prop="title" label="数据来源-标题" style="width: 15%" :show-overflow-tooltip='true'></el-table-column>
+                      <el-table-column prop="content" label="数据来源-内容" style="width: 80%"  :show-overflow-tooltip='true'></el-table-column>
+                      <el-table-column prop="score" label="得分" width="100px" :show-overflow-tooltip='true'></el-table-column>
+                    </el-table>
+
                     <el-popover
                       v-for="source in message.source"
                       placement="top-start"
