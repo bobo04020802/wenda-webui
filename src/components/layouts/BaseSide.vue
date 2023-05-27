@@ -145,7 +145,7 @@
         >新建会话</el-button
       >
       <el-button @click="chatDocument = true" style="margin: 0"
-        >与文档对话</el-button
+        >文档对话</el-button
       >
     </div>
   </el-menu>
