@@ -140,7 +140,7 @@
       "
     >
       <el-button
-        @click="chatStore.createConversation()"
+        @click="chatStore.openConversationDialog()"
         style="margin-bottom: 5px"
         >新建会话</el-button
       >
@@ -149,6 +149,30 @@
       >
     </div>
   </el-menu>
+  <el-dialog title="会话信息" v-model="editVisible" width="35%">
+    <el-form label-width="100px" ref="formData" :rules="rules" :model="dialogForm">
+      <el-form-item label="会话名称" prop="name" clearable>
+        <el-input v-model="dialogForm.name"></el-input>
+      </el-form-item>
+      <el-form-item label="会话类型" prop="converType" clearable>
+        <el-select v-model="dialogForm.converType">
+          <el-option
+              v-for="item in valueOptions"
+              :key="item.question"
+              :label="item.name"
+              :value="item.question"
+          >
+          </el-option>
+        </el-select>
+      </el-form-item>
+    </el-form>
+    <template #footer>
+       <span class="dialog-footer">
+             <el-button @click="chatStore.cancel">取 消</el-button>
+             <el-button type="primary" @click="chatStore.createConversation()">确 定</el-button>
+       </span>
+    </template>
+  </el-dialog>
 </template>
 
 <script lang="ts" setup>
@@ -177,7 +201,7 @@ const handleClose = (key: string, keyPath: string[]) => {
   console.log(key, keyPath);
 };
 let chatStore = useChatStore();
-const { conversationList, messageList, activeConversationId } =
+const { conversationList, messageList, activeConversationId, editVisible, valueOptions, converType, dialogForm, rules } =
   storeToRefs(chatStore);
 activeConversationId.value = messageList.value[0].conversationId;
 

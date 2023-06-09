@@ -191,9 +191,14 @@ const getKnowledge = (parentMessageId: string, isRetry: boolean) => {
       let lastIndex = messageList.history.push(messageAI);
       lastMsg = messageList.history[lastIndex - 1];
     }
-
     //生成prompt
-    chatStore.finallyPrompt = chatStore.inputMessage;
+    let cuttitem = chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)
+    if(cuttitem.converType != "知识库|内部模型" && cuttitem.converType != undefined){
+      // console.log(chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId).converType)
+      chatStore.finallyPrompt = cuttitem.converType + chatStore.inputMessage;
+    }else{
+      chatStore.finallyPrompt = chatStore.inputMessage;
+    }
 
     chatStore.sendMessage(chatStore.finallyPrompt, (data: any) => {
       if (data != "{{successEnd}}") {
