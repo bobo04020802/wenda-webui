@@ -158,7 +158,7 @@
         <el-select v-model="dialogForm.converType">
           <el-option
               v-for="item in valueOptions"
-              :key="item.question"
+              :key="item.name"
               :label="item.name"
               :value="item.question"
           >

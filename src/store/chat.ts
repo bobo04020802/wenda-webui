@@ -24,10 +24,7 @@ export const useChatStore = defineStore("chat", {
       {
         name: "材料改写",
         description: "对指定内容进行多个版本的改写，以避免文本重复",
-        question:
-            "用中文改写以下段落，可以提到相同或类似的内容,但不必重复使用。可以使用一些修辞手法来增强文本的美感,例如比喻、拟人、排比等。可以添加更多的细节来丰富文本的内容和形象,例如描述人物、场景、事件等。可以通过逻辑推导来得出结论或观点,例如通过推理、分析、比较等方式。可以无中生有地提到一些内容,以增加细节和丰富性,例如通过虚构、猜测等方式。在修改段落时,需要确保文本的含义不发生变化,可以重新排列句子、改变表达方式。"
-
-        ,
+        question: "用中文改写以下段落，可以提到相同或类似的内容,但不必重复使用。可以使用一些修辞手法来增强文本的美感,例如比喻、拟人、排比等。可以添加更多的细节来丰富文本的内容和形象,例如描述人物、场景、事件等。可以通过逻辑推导来得出结论或观点,例如通过推理、分析、比较等方式。可以无中生有地提到一些内容,以增加细节和丰富性,例如通过虚构、猜测等方式。在修改段落时,需要确保文本的含义不发生变化,可以重新排列句子、改变表达方式。",
       },
       {
         name: "翻译",
@@ -79,6 +76,11 @@ export const useChatStore = defineStore("chat", {
         description: "根据主题撰写新闻",
         question: "使用清晰、简洁、易读的语言写一篇新闻，主题为",
       },
+      {
+        name: "根据标题写论文",
+        description: "根据主题撰写内容翔实、有信服力的论文",
+        question: "根据以下主题，写一篇高度凝练且全面的论文提纲：",
+      },
     ],
     dialogForm :{
       name: "",
@@ -87,7 +89,7 @@ export const useChatStore = defineStore("chat", {
     rules : {
       name: [
         { required: true, message: "请输入名称", trigger: "blur" },
-        { min: 3, max: 8, message: '长度在 3 到 8 个字符', trigger: 'blur' }
+        { min: 3, max: 20, message: '长度在 3 到 8 个字符', trigger: 'blur' }
       ],
       converType: [
         { required: true, message: "请选择类型", trigger: "blur" },
@@ -134,7 +136,7 @@ export const useChatStore = defineStore("chat", {
       if(cuttitem.converType != "知识库|内部模型" && cuttitem.converType != undefined){
         this.zhishiku = false;
       }else{
-        this.zhishiku = true;
+        // this.zhishiku = true;
       }
       return this.messageList.find(
         (item) => item.conversationId === conversationId
