@@ -6,6 +6,7 @@ import axios from "axios";
 import { ElMessage, ElNotification } from "element-plus";
 import { useChatStore } from "~/store/chat";
 import { useAppStore } from "~/store/app";
+import {useDocChatStore} from "~/store/docChat";
 import { storeToRefs } from "pinia";
 import { useDark, useToggle } from "@vueuse/core";
 import { nanoid } from "nanoid";
@@ -27,6 +28,8 @@ const isDark = useDark();
 let chatStore = useChatStore();
 const { conversationList, messageList, activeConversationId } =
   storeToRefs(chatStore);
+let docChatStore = useDocChatStore()
+const {valueOptions} = storeToRefs(docChatStore)
 let appStore = useAppStore();
 const { showSide, isMobile } = storeToRefs(appStore);
 
@@ -222,95 +225,11 @@ const getKnowledge = (parentMessageId: string, isRetry: boolean) => {
     }
     //生成prompt
     let cuttitem = chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)
-    if(cuttitem.converType == "根据以下主题，写一篇高度凝练且全面的论文提纲："){
-      chatStore.sendMessage("根据以下主题，写一篇高度凝练且全面的论文提纲：" + chatStore.inputMessage, (data: any) => {
-        if (data != "{{successEnd}}") {
-          lastMsg.content = data;
-        } else {
-          let resp = lastMsg.content.replace(/\n- /g, '\n1.')//兼容不同格式
-              .split("\n");
-          let content = [resp.join("\n\n"), "------------------------------正文------------------------------"]
-          for (let i in resp) {
-            let lastMsg_: any;
-            let line = resp[i]
-            if (line == "") continue
-            line = line.split(".")
-            if (line.length < 2) {
-              continue  // 判断非提纲内容
-            }
-            content.push(resp[i])   // 保存提纲
-            let num = find_RomanNumerals(line[0])
-            if (num <= 0 || num == 100) {
-              let messageAI = {
-                messageId: nanoid(),
-                role: "user",
-                content: line[1],
-                time: sendtime,
-                source: [],
-                parentMessageId: parentMessageId,
-              };
-              //如果不是重试
-              if (!isRetry) {
-                let lastIndex = messageList.history.push(messageAI);
-                lastMsg_ = messageList.history[lastIndex - 1];
-              }
-              messageAI = {
-                messageId: nanoid(),
-                role: "AI",
-                content: "等待模型中...",
-                time: sendtime,
-                source: [],
-                parentMessageId: parentMessageId,
-              };
-              //如果不是重试
-              if (!isRetry) {
-                let lastIndex = messageList.history.push(messageAI);
-                lastMsg_ = messageList.history[lastIndex - 1];
-              }
-              chatStore.sendMessage("根据主题：" + chatStore.inputMessage +
-                  "\n对下列段落进行详细的撰写：" + line[1], (data: any) => {
-                if (data != "{{successEnd}}") {
-                  lastMsg_.content = data;
-                } else {
-                  content.push(lastMsg_.content + "\n\n");
-                  if(i==resp.length-1){
-                    let messageAI = {
-                      messageId: nanoid(),
-                      role: "user",
-                      content: chatStore.inputMessage,
-                      time: sendtime,
-                      source: [],
-                      parentMessageId: parentMessageId,
-                    };
-                    //如果不是重试
-                    if (!isRetry) {
-                      let lastIndex = messageList.history.push(messageAI);
-                      lastMsg = messageList.history[lastIndex - 1];
-                    }
-                    messageAI = {
-                      messageId: nanoid(),
-                      role: "AI",
-                      content: "等待模型中...",
-                      time: sendtime,
-                      source: [],
-                      parentMessageId: parentMessageId,
-                    };
-                    //如果不是重试
-                    if (!isRetry) {
-                      let lastIndex = messageList.history.push(messageAI);
-                      lastMsg = messageList.history[lastIndex - 1];
-                    }
-                    content = content.join("\n\n");
-                    lastMsg.content = content
-                    chatStore.inputMessage = "";
-                    chatStore.isSending = false;
-                  }
-                }
-              })
-            }
-          }
-        }
-      });
+    let valueopt = docChatStore.valueOptions.find((item) => item.question === cuttitem.converType);
+    // console.log(valueopt)
+    if(valueopt.fun_ != undefined && typeof valueopt.fun_ == 'function'){
+      let tempfun_ = valueopt.fun_;
+      tempfun_(chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry);
     }else{
       if(cuttitem.converType != "知识库|内部模型" && cuttitem.converType != undefined){
         // console.log(chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId).converType)

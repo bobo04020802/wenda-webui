@@ -181,13 +181,14 @@ import imgRobot from "~/assets/robot.jpg";
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";
 import { useChatStore } from "~/store/chat";
+import {useDocChatStore} from "~/store/docChat";
 import { useDark, useToggle } from "@vueuse/core";
 import { relative } from "path";
 
 import { useAppStore } from "~/store/app";
 let appStore = useAppStore();
 const { showSide, isMobile, chatDocument } = storeToRefs(appStore);
-
+const {valueOptions} = useDocChatStore()
 const isDark = useDark();
 
 const isCollapse = ref(true);
@@ -201,7 +202,7 @@ const handleClose = (key: string, keyPath: string[]) => {
   console.log(key, keyPath);
 };
 let chatStore = useChatStore();
-const { conversationList, messageList, activeConversationId, editVisible, valueOptions, converType, dialogForm, rules } =
+const { conversationList, messageList, activeConversationId, editVisible, converType, dialogForm, rules } =
   storeToRefs(chatStore);
 activeConversationId.value = messageList.value[0].conversationId;
 
