@@ -6,7 +6,7 @@ import { ref, reactive, getCurrentInstance } from "vue";
 import { useChatStore } from "~/store/chat";
 import { storeToRefs } from "pinia";
 let chatStore = useChatStore();
-const { zhishiku } = storeToRefs(chatStore);
+const { zhishiku,on_zhishiku } = storeToRefs(chatStore);
 
 import { useAppStore } from "~/store/app";
 let appStore = useAppStore();
@@ -56,7 +56,7 @@ const toggleSide = () => {
       <span>聊天</span>
     </div>
     <div style="display: flex; justify-content: end; width: 100%">
-      <div style="display: flex; margin-right: 20px">
+      <div style="display: flex; margin-right: 20px" v-if="on_zhishiku">
         <el-switch
           v-model="zhishiku"
           style="margin-left: 5px; margin-top: 12px"

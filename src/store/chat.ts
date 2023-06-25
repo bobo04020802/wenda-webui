@@ -19,7 +19,7 @@ export const useChatStore = defineStore("chat", {
     editVisible: false,
     //会话类型
     converType:'',
-    
+
     dialogForm :{
       name: "",
       converType: "",
@@ -63,6 +63,8 @@ export const useChatStore = defineStore("chat", {
     top_p: 0.3,
     //是否使用知识库
     zhishiku: true,
+    //是否显示知识库切换按钮
+    on_zhishiku: true,
     //历史对话
     QA_history: [],
     //prompt模板
@@ -75,7 +77,9 @@ export const useChatStore = defineStore("chat", {
       let cuttitem = this.conversationList.find((item) => item.conversationId === conversationId)
       if(cuttitem.converType != "知识库|内部模型" && cuttitem.converType != undefined){
         this.zhishiku = false;
+        this.on_zhishiku = false;
       }else{
+        this.on_zhishiku = true;
         // this.zhishiku = true;
       }
       return this.messageList.find(
@@ -179,6 +183,7 @@ export const useChatStore = defineStore("chat", {
             ws.close();
           }
         };
+        console.log("QA_history===",this.QA_history)
         ws.onopen = () => {
           ws.send(
             JSON.stringify({

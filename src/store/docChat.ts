@@ -1,4 +1,4 @@
-import { defineStore } from "pinia";
+import {defineStore, storeToRefs} from "pinia";
 import {nanoid} from "nanoid";
 import axios from "axios";
 export const useDocChatStore = defineStore("docChat", {
@@ -17,6 +17,30 @@ export const useDocChatStore = defineStore("docChat", {
     ],
     //会话类型选项
     valueOptions:[
+      {
+        name: "普通知识库",
+        description: "知识库|内部模型",
+        question: "知识库|内部模型",
+        fun_: "不是方法",
+      },
+      {
+        name: "内容到excel",
+        description: "内容到excel",
+        question: "我希望你能提取下面内容中的数字以及数值对应的指标，如果不存在则回答:无，指标和数值中不能涵盖符号，如果有符号请拆分为多个指标和数值，指标内容不重复，按照表格形式回复，表格有两列且表头为(指标，数据)：",
+        fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
+          chatStore.QA_history = [{ "role": "user", "content": "我希望你能提取下面内容中的数字以及数字对应的指标，如果不存在则回答:无，指标和数值中不能涵盖符号，如果有符号请拆分为多个指标和数值，指标内容不重复，按照表格形式回复，表格有两列且表头为(指标，数据)：：前5个月，设施蔬菜、水果产量分别增长4.3%和5%。畜牧业生产稳定向好，生猪出栏1140万头、增长3%，肉、奶产量分别增长3%和5%，蛋产量持平。渔业生产持续向好，水产品总产量增长3.9%。上半年，预计农业增加值增长4%左右。" },
+            { "role": "AI", "content": '| 指标 | 数据 |\n|  --- | --- |\n| 设施蔬菜 | 4.3% |\n| 水果产量 | 5% |\n| 生猪出栏 | 1140万头 |\n| 生猪出栏 | 3% |\n| 肉 | 3% |\n| 奶 | 5% |\n| 水产品总产量 | 3.9% |\n| 农业增加值 | 4% |\n' }]
+          chatStore.sendMessage("我希望你能提取下面内容中的数字以及数字对应的指标，如果不存在则回答:无，指标和数值中不能涵盖符号，如果有符号请拆分为多个指标和数值，指标内容不重复，按照表格形式回复，表格有两列且表头为(指标，数据)：" + chatStore.inputMessage, (data: any) => {
+            if (data != "{{successEnd}}") {
+              lastMsg.content = data;
+            } else {
+              chatStore.QA_history = []
+              chatStore.inputMessage = "";
+              chatStore.isSending = false;
+            }
+          })
+        },
+      },
       {
         name: "材料改写",
         description: "对指定内容进行多个版本的改写，以避免文本重复",
@@ -184,7 +208,8 @@ export const useDocChatStore = defineStore("docChat", {
         question: "知识库增强(根据关键词)",
         fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
           chatStore.QA_history = [{ "role": "user", "content": "现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：科普之路是不是任重而道远？" },
-            { "role": "AI", "content": '科普 道路 任重 道远' }]
+            { "role": "AI", "content": '科普 道路 任重 道远' },{ "role": "user", "content": "现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：苏州高新区和上海高新区在人才政策上的区别是什么？" },
+            { "role": "AI", "content": '苏州高新区 上海高新区 人才政策' }]
           chatStore.sendMessage("现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：" + chatStore.inputMessage, (data: any) => {
             if (data != "{{successEnd}}") {
               lastMsg.content = data;
