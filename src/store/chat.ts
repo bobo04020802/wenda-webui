@@ -209,8 +209,8 @@ export const useChatStore = defineStore("chat", {
       let sendtime = dayjs().format("YYYY-MM-DD hh:mm:ss");
 
       //发送消息
-      this.send_raw(finallyPrompt, (data: any) => {
-        onMessage(data);
+      await this.send_raw(finallyPrompt, async (data: any) => {
+        await onMessage(data);
       });
     },
     //存储文本进知识分区

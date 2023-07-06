@@ -42,6 +42,254 @@ export const useDocChatStore = defineStore("docChat", {
         },
       },
       {
+        name: "产业规划",
+        description: "根据主题撰写内容翔实、有信服力的产业规划报告",
+        question: "你将作为一个产品经理，进行产业链分析，并绘制产业链结构表",
+        fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
+          chatStore.sendMessage("你将作为一个产品经理，进行产业规划，重点分析产业链，越详尽越好，根据以下主题，写一篇高度凝练且全面的产业报告提纲：" + chatStore.inputMessage,  async (data: any) => {
+            if (data != "{{successEnd}}") {
+              lastMsg.content = data;
+            } else {
+              let resp = lastMsg.content.replace(/\n- /g, '\n1.')//兼容不同格式
+                  .split("\n");
+              let content = [resp.join("\n\n"), "------------------------------正文------------------------------"]
+              for (let i in resp) {
+                let lastMsg_: any;
+                let line = resp[i]
+                if (line == "") continue
+                line = line.split(".")
+                if (line.length < 2) {
+                  continue  // 判断非提纲内容
+                }
+                content.push(resp[i])   // 保存提纲
+                let num = find_RomanNumerals(line[0])
+                if (num <= 0 || num == 100) {
+                  let messageAI = {
+                    messageId: nanoid(),
+                    role: "user",
+                    content: line[1],
+                    time: sendtime,
+                    source: [],
+                    parentMessageId: parentMessageId,
+                  };
+                  //如果不是重试
+                  if (!isRetry) {
+                    let lastIndex = messageList.history.push(messageAI);
+                    lastMsg_ = messageList.history[lastIndex - 1];
+                  }
+                  messageAI = {
+                    messageId: nanoid(),
+                    role: "AI",
+                    content: "等待模型中...",
+                    time: sendtime,
+                    source: [],
+                    parentMessageId: parentMessageId,
+                  };
+                  //如果不是重试
+                  if (!isRetry) {
+                    let lastIndex = messageList.history.push(messageAI);
+                    lastMsg_ = messageList.history[lastIndex - 1];
+                  }
+                  await chatStore.sendMessage("根据主题：" + chatStore.inputMessage +
+                      "\n对下列段落进行详细的撰写：" + line[1], (data: any) => {
+                    if (data != "{{successEnd}}") {
+                      lastMsg_.content = data;
+                    } else {
+                      content.push(lastMsg_.content + "\n\n");
+                      if(i==resp.length-1){
+                        let messageAI = {
+                          messageId: nanoid(),
+                          role: "user",
+                          content: chatStore.inputMessage,
+                          time: sendtime,
+                          source: [],
+                          parentMessageId: parentMessageId,
+                        };
+                        //如果不是重试
+                        if (!isRetry) {
+                          let lastIndex = messageList.history.push(messageAI);
+                          lastMsg = messageList.history[lastIndex - 1];
+                        }
+                        messageAI = {
+                          messageId: nanoid(),
+                          role: "AI",
+                          content: "等待模型中...",
+                          time: sendtime,
+                          source: [],
+                          parentMessageId: parentMessageId,
+                        };
+                        //如果不是重试
+                        if (!isRetry) {
+                          let lastIndex = messageList.history.push(messageAI);
+                          lastMsg = messageList.history[lastIndex - 1];
+                        }
+                        content = content.join("\n\n");
+                        lastMsg.content = content
+                        chatStore.inputMessage = "";
+                        chatStore.isSending = false;
+                      }
+                    }
+                  })
+                }
+              }
+            }
+          })
+        },
+      },
+      {
+        name: "经济运行月报（知识库）",
+        description: "经济运行月报（知识库）",
+        question: "经济运行月报（知识库）",
+        fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
+          let date = new Date();
+          let year = date.getFullYear();
+          let month = date.getMonth()+1;
+          let lastMsg_: any;
+          chatStore.sendMessage("你将作为一个经济运行分析角色，出具一套经济运行报告，根据以下主题，写一篇高度凝练且全面的经济运行报告提纲：" + year + "年" + month + "月" +"经济运行报告", async (data: any) => {
+            if (data != "{{successEnd}}") {
+              lastMsg.content = data;
+            } else {
+              let line = year + "年" + month + "月 " + "经济 运行 报告"
+              let response
+              try {
+                response = await axios
+                    .post(import.meta.env.VITE_WENDA_URL + "/api/find", {
+                      prompt: line,
+                    })
+              }catch(e){
+                console.log(error);
+                lastMsg_.content = "检索数据失败";
+              }
+              console.log(response.data);
+              //从消息数组中删除所有role为ui的消息
+              messageList.history = messageList.history.filter(
+                  (i: any) => i.role != "ui"
+              );
+              //如果已经终止发送
+              if (chatStore.isAbort) {
+                return;
+              }
+              let messageAI = {
+                messageId: nanoid(),
+                role: "user",
+                content: line,
+                time: sendtime,
+                source: [],
+                parentMessageId: parentMessageId,
+              };
+              //如果不是重试
+              if (!isRetry) {
+                let lastIndex = messageList.history.push(messageAI);
+                lastMsg_ = messageList.history[lastIndex - 1];
+              }
+              //如果不是重试
+              if (!isRetry) {
+                //给机器人添加等待效果
+                messageAI = {
+                  messageId: nanoid(),
+                  role: "AI",
+                  content: "生成内容来源于如下知识库内容",
+                  time: sendtime,
+                  source: response.data,
+                  parentMessageId: parentMessageId,
+                };
+                let lastIndex = messageList.history.push(messageAI);
+                lastMsg_ = messageList.history[lastIndex - 1];
+              }
+
+              //如果信息来源不为空，合并数据源并生成prompt
+              chatStore.finallyPrompt = "\n根据主题：" + year + "年" + month + "月" +"经济运行报告。\n学习以下文段, 用中文回答用户问题。\n" +
+                  response.data.map((i: any) => i.content).join(chatStore.inputMessage + "\n");
+
+
+              let resp = lastMsg.content.replace(/\n- /g, '\n1.')//兼容不同格式
+                  .split("\n");
+              let content = [resp.join("\n\n"), "------------------------------正文------------------------------"]
+              for (let i in resp) {
+                console.log("resp========",resp)
+                // let lastMsg_: any;
+                let line = resp[i]
+                if (line == "") continue
+                line = line.split(".")
+                if (line.length < 2) {
+                  continue  // 判断非提纲内容
+                }
+                content.push(resp[i])   // 保存提纲
+                let num = find_RomanNumerals(line[0])
+                if (num <= 0 || num == 100) {
+                  messageAI = {
+                    messageId: nanoid(),
+                    role: "user",
+                    content: line[1],
+                    time: sendtime,
+                    source: [],
+                    parentMessageId: parentMessageId,
+                  };
+                  //如果不是重试
+                  if (!isRetry) {
+                    let lastIndex = messageList.history.push(messageAI);
+                    lastMsg_ = messageList.history[lastIndex - 1];
+                  }
+                  messageAI = {
+                    messageId: nanoid(),
+                    role: "AI",
+                    content: "等待模型中...",
+                    time: sendtime,
+                    source: [],
+                    parentMessageId: parentMessageId,
+                  };
+                  //如果不是重试
+                  if (!isRetry) {
+                    let lastIndex = messageList.history.push(messageAI);
+                    lastMsg_ = messageList.history[lastIndex - 1];
+                  }
+                  await chatStore.sendMessage(chatStore.finallyPrompt +
+                      "\n对下列段落进行详细的撰写，如果无法从学习的文段得到答案，忽略文段内容并用中文回答用户问题：" + line[1], async (data: any) => {
+                    if (data != "{{successEnd}}") {
+                      lastMsg_.content = data;
+                    } else {
+                      content.push(lastMsg_.content + "\n\n");
+                      if(i==resp.length-1){
+                        let messageAI = {
+                          messageId: nanoid(),
+                          role: "user",
+                          content: chatStore.inputMessage,
+                          time: sendtime,
+                          source: [],
+                          parentMessageId: parentMessageId,
+                        };
+                        //如果不是重试
+                        if (!isRetry) {
+                          let lastIndex = messageList.history.push(messageAI);
+                          lastMsg = messageList.history[lastIndex - 1];
+                        }
+                        messageAI = {
+                          messageId: nanoid(),
+                          role: "AI",
+                          content: "等待模型中...",
+                          time: sendtime,
+                          source: [],
+                          parentMessageId: parentMessageId,
+                        };
+                        //如果不是重试
+                        if (!isRetry) {
+                          let lastIndex = messageList.history.push(messageAI);
+                          lastMsg = messageList.history[lastIndex - 1];
+                        }
+                        content = content.join("\n\n");
+                        lastMsg.content = content
+                        chatStore.inputMessage = "";
+                        chatStore.isSending = false;
+                      }
+                    }
+                  })
+                }
+              }
+            }
+          })
+        },
+      },
+      {
         name: "材料改写",
         description: "对指定内容进行多个版本的改写，以避免文本重复",
         question: "用中文改写以下段落，可以提到相同或类似的内容,但不必重复使用。可以使用一些修辞手法来增强文本的美感,例如比喻、拟人、排比等。可以添加更多的细节来丰富文本的内容和形象,例如描述人物、场景、事件等。可以通过逻辑推导来得出结论或观点,例如通过推理、分析、比较等方式。可以无中生有地提到一些内容,以增加细节和丰富性,例如通过虚构、猜测等方式。在修改段落时,需要确保文本的含义不发生变化,可以重新排列句子、改变表达方式。",
@@ -112,7 +360,7 @@ export const useDocChatStore = defineStore("docChat", {
         description: "根据主题撰写内容翔实、有信服力的论文",
         question: "根据主题撰写内容翔实、有信服力的论文",
         fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
-          chatStore.sendMessage("根据以下主题，写一篇高度凝练且全面的论文提纲：" + chatStore.inputMessage, (data: any) => {
+          chatStore.sendMessage("根据以下主题，写一篇高度凝练且全面的论文提纲：" + chatStore.inputMessage, async (data: any) => {
             if (data != "{{successEnd}}") {
               lastMsg.content = data;
             } else {
@@ -156,7 +404,7 @@ export const useDocChatStore = defineStore("docChat", {
                     let lastIndex = messageList.history.push(messageAI);
                     lastMsg_ = messageList.history[lastIndex - 1];
                   }
-                  chatStore.sendMessage("根据主题：" + chatStore.inputMessage +
+                  await chatStore.sendMessage("根据主题：" + chatStore.inputMessage +
                       "\n对下列段落进行详细的撰写：" + line[1], (data: any) => {
                     if (data != "{{successEnd}}") {
                       lastMsg_.content = data;
@@ -210,7 +458,7 @@ export const useDocChatStore = defineStore("docChat", {
           chatStore.QA_history = [{ "role": "user", "content": "现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：科普之路是不是任重而道远？" },
             { "role": "AI", "content": '科普 道路 任重 道远' },{ "role": "user", "content": "现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：苏州高新区和上海高新区在人才政策上的区别是什么？" },
             { "role": "AI", "content": '苏州高新区 上海高新区 人才政策' }]
-          chatStore.sendMessage("现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：" + chatStore.inputMessage, (data: any) => {
+          chatStore.sendMessage("现在开始,你的任务是提取关键词，提取下列语句中的关键词，并用空格分隔：" + chatStore.inputMessage, async (data: any) => {
             if (data != "{{successEnd}}") {
               lastMsg.content = data;
             } else {
@@ -220,11 +468,11 @@ export const useDocChatStore = defineStore("docChat", {
               for (let i in resp) {
                 let lastMsg_: any;
                 let line = resp[i]
-                axios
+                await axios
                     .post(import.meta.env.VITE_WENDA_URL + "/api/find", {
                       prompt: line,
                     })
-                    .then(function (response) {
+                    .then(async function (response) {
                       console.log(response.data);
                       //从消息数组中删除所有role为ui的消息
                       messageList.history = messageList.history.filter(
@@ -266,7 +514,7 @@ export const useDocChatStore = defineStore("docChat", {
                       chatStore.finallyPrompt = "学习以下文段, 用中文回答用户问题。如果无法从中得到答案，忽略文段内容并用中文回答用户问题。\n" +
                           response.data.map((i: any) => i.content).join("\n") + "\n问题：" + chatStore.inputMessage
 
-                      chatStore.sendMessage(chatStore.finallyPrompt, (data: any) => {
+                      await chatStore.sendMessage(chatStore.finallyPrompt, async (data: any) => {
                         if (data != "{{successEnd}}") {
                           lastMsg_.content = data;
                         } else {
@@ -302,7 +550,7 @@ export const useDocChatStore = defineStore("docChat", {
                               let lastIndex = messageList.history.push(messageAI);
                               lastMsg_ = messageList.history[lastIndex - 1];
                             }
-                            chatStore.sendMessage(chatStore.finallyPrompt, (data: any) => {
+                            await chatStore.sendMessage(chatStore.finallyPrompt, (data: any) => {
                               if (data != "{{successEnd}}") {
                                 lastMsg_.content = data;
                               } else {
@@ -316,7 +564,7 @@ export const useDocChatStore = defineStore("docChat", {
                     })
                     .catch(function (error) {
                       console.log(error);
-                      uiMsg.content = "检索数据失败";
+                      lastMsg_.content = "检索数据失败";
                     });
               }
             }
