@@ -5,6 +5,7 @@
   "scripts": {
     "dev": "vite --host 0.0.0.0 --port 5173",
     "build": "vite build",
+    "build:pro": "node --max_old_space_size=8192 ./node_modules/vite/bin/vite.js build --mode pro",
     "generate": "vite-ssg build",
     "preview": "vite preview",
     "typecheck": "vue-tsc --noEmit"

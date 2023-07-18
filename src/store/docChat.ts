@@ -290,6 +290,101 @@ export const useDocChatStore = defineStore("docChat", {
         },
       },
       {
+        name: "日常工作总结",
+        description: "根据主题撰写内容翔实、有信服力的工作总结",
+        question: "你将作为一个部门经理，汇报工作总结",
+        fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
+          chatStore.sendMessage("你将作为一个部门经理，进行工作总结，越详尽越好，根据以下内容，写一篇高度凝练且全面的部门工作提纲：" + chatStore.inputMessage,  async (data: any) => {
+            if (data != "{{successEnd}}") {
+              lastMsg.content = data;
+            } else {
+              let resp = lastMsg.content.replace(/\n- /g, '\n1.')//兼容不同格式
+                  .split("\n");
+              let content = [resp.join("\n\n"), "------------------------------正文------------------------------"]
+              for (let i in resp) {
+                let lastMsg_: any;
+                let line = resp[i]
+                if (line == "") continue
+                line = line.split(".")
+                if (line.length < 2) {
+                  continue  // 判断非提纲内容
+                }
+                content.push(resp[i])   // 保存提纲
+                let num = find_RomanNumerals(line[0])
+                if (num <= 0 || num == 100) {
+                  let messageAI = {
+                    messageId: nanoid(),
+                    role: "user",
+                    content: line[1],
+                    time: sendtime,
+                    source: [],
+                    parentMessageId: parentMessageId,
+                  };
+                  //如果不是重试
+                  if (!isRetry) {
+                    let lastIndex = messageList.history.push(messageAI);
+                    lastMsg_ = messageList.history[lastIndex - 1];
+                  }
+                  messageAI = {
+                    messageId: nanoid(),
+                    role: "AI",
+                    content: "等待模型中...",
+                    time: sendtime,
+                    source: [],
+                    parentMessageId: parentMessageId,
+                  };
+                  //如果不是重试
+                  if (!isRetry) {
+                    let lastIndex = messageList.history.push(messageAI);
+                    lastMsg_ = messageList.history[lastIndex - 1];
+                  }
+                  await chatStore.sendMessage("根据主题：" + chatStore.inputMessage +
+                      "\n对下列段落进行详细的撰写：" + line[1], (data: any) => {
+                    if (data != "{{successEnd}}") {
+                      lastMsg_.content = data;
+                    } else {
+                      content.push(lastMsg_.content + "\n\n");
+                      if(i==resp.length-1){
+                        let messageAI = {
+                          messageId: nanoid(),
+                          role: "user",
+                          content: chatStore.inputMessage,
+                          time: sendtime,
+                          source: [],
+                          parentMessageId: parentMessageId,
+                        };
+                        //如果不是重试
+                        if (!isRetry) {
+                          let lastIndex = messageList.history.push(messageAI);
+                          lastMsg = messageList.history[lastIndex - 1];
+                        }
+                        messageAI = {
+                          messageId: nanoid(),
+                          role: "AI",
+                          content: "等待模型中...",
+                          time: sendtime,
+                          source: [],
+                          parentMessageId: parentMessageId,
+                        };
+                        //如果不是重试
+                        if (!isRetry) {
+                          let lastIndex = messageList.history.push(messageAI);
+                          lastMsg = messageList.history[lastIndex - 1];
+                        }
+                        content = content.join("\n\n");
+                        lastMsg.content = content
+                        chatStore.inputMessage = "";
+                        chatStore.isSending = false;
+                      }
+                    }
+                  })
+                }
+              }
+            }
+          })
+        },
+      },
+      {
         name: "材料改写",
         description: "对指定内容进行多个版本的改写，以避免文本重复",
         question: "用中文改写以下段落，可以提到相同或类似的内容,但不必重复使用。可以使用一些修辞手法来增强文本的美感,例如比喻、拟人、排比等。可以添加更多的细节来丰富文本的内容和形象,例如描述人物、场景、事件等。可以通过逻辑推导来得出结论或观点,例如通过推理、分析、比较等方式。可以无中生有地提到一些内容,以增加细节和丰富性,例如通过虚构、猜测等方式。在修改段落时,需要确保文本的含义不发生变化,可以重新排列句子、改变表达方式。",
