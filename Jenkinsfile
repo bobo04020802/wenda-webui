@@ -34,8 +34,8 @@ pipeline {
                         //sh 'npm config set registry https://registry.npm.taobao.org'
                         //sh 'npm install --global yarn'
                         sh 'yarn config set registry https://registry.npm.taobao.org/'
-                        sh 'npm -g config set user root'
-                        sh 'yarn install --unsafe-perm=true --allow-root'
+                        //sh 'npm -g config set user root'
+                        sh 'yarn install'
                         //sh 'chmod -R 777 /home/jenkins/agent/workspace/vopsvqfr6_wenda-webui_main/node_modules'
                         sh 'npm run build:pro'
                         sh 'ls -al'
@@ -51,7 +51,7 @@ pipeline {
             steps {
                 container('base') {
                     sh 'ls'
-                    sh 'docker build -t wenda-webui:latest -f Dockerfile  ./'
+                    sh 'docker build -t $APP_NAME:latest -f Dockerfile  ./'
                 }
 
             }
@@ -61,10 +61,10 @@ pipeline {
             agent none
             steps {
                 container('base') {
-                    withCredentials([usernamePassword(credentialsId : 'harber-docker-registry' ,usernameVariable : 'DOCKER_USER_VAR' ,passwordVariable : 'DOCKER_PWD_VAR' ,)]) {
+                    withCredentials([usernamePassword(credentialsId : "$HARBOR_CREDENTIAL" ,usernameVariable : 'DOCKER_USER_VAR' ,passwordVariable : 'DOCKER_PWD_VAR' ,)]) {
                         sh 'echo "$DOCKER_PWD_VAR" | docker login $REGISTRY -u "$DOCKER_USER_VAR" --password-stdin'
-                        sh 'docker tag wenda-webui:latest $REGISTRY/$DOCKERHUB_NAMESPACE/wenda-webui:SNAPSHOT-$BUILD_NUMBER'
-                        sh 'docker push  $REGISTRY/$DOCKERHUB_NAMESPACE/wenda-webui:SNAPSHOT-$BUILD_NUMBER'
+                        sh 'docker tag $APP_NAME:latest $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BUILD_NUMBER'
+                        sh 'docker push  $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BUILD_NUMBER'
                     }
 
                 }
@@ -72,7 +72,7 @@ pipeline {
             }
         }
 
-        stage('部署到dev环境') {
+        stage('部署') {
             agent none
             //steps {
             //    kubernetesDeploy(configs: 'deploy/**', enableConfigSubstitution: true, kubeconfigId: "$KUBECONFIG_CREDENTIAL_ID")
@@ -92,7 +92,7 @@ pipeline {
 
         //1、配置全系统的邮件：                   全系统的监控
         //2、修改ks-jenkins的配置，里面的邮件；   流水线发邮件
-        stage('发送确认邮件') {
+        stage('发送邮件') {
             //agent none
             steps {
                 container ('base') {
@@ -103,12 +103,13 @@ pipeline {
 
     }
     environment {
+        HARBOR_CREDENTIAL = 'harbor-upwd'
         DOCKER_CREDENTIAL_ID = 'dockerhub-id'
-        KUBECONFIG_CREDENTIAL_ID = 'demo-kubeconfig'
+        KUBECONFIG_CREDENTIAL_ID = 'kubeconfig'
         REGISTRY = 'core.harbor.domain:30002'
-        DOCKERHUB_NAMESPACE = 'his-cloud'
+        DOCKERHUB_NAMESPACE = 'liaoning'
         GITHUB_ACCOUNT = 'kubesphere'
         APP_NAME = 'wenda-webui'
-        ALIYUNHUB_NAMESPACE = 'his-cloud'
+        KUBESPHERE_NAMESPACE = 'lnserver'
     }
 }

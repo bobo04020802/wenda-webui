@@ -2,15 +2,15 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   labels:
-    app: wenda-webui
-  name: wenda-webui
-  namespace: his-cloud   #一定要写名称空间
+    app: $APP_NAME
+  name: $APP_NAME
+  namespace: $KUBESPHERE_NAMESPACE   #一定要写名称空间
 spec:
   progressDeadlineSeconds: 600
   replicas: 1
   selector:
     matchLabels:
-      app: wenda-webui
+      app: $APP_NAME
   strategy:
     rollingUpdate:
       maxSurge: 50%
@@ -19,12 +19,12 @@ spec:
   template:
     metadata:
       labels:
-        app: wenda-webui
+        app: $HARBOR_CREDENTIAL
     spec:
       imagePullSecrets:
         - name: harber-docker-hub  #提前在项目下配置访问阿里云的账号密码
       containers:
-        - image: $REGISTRY/$DOCKERHUB_NAMESPACE/wenda-webui:SNAPSHOT-$BUILD_NUMBER
+        - image: $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
           #         readinessProbe:
           #           httpGet:
           #             path: /actuator/health
@@ -51,9 +51,9 @@ apiVersion: v1
 kind: Service
 metadata:
   labels:
-    app: wenda-webui
-  name: wenda-webui
-  namespace: his-cloud
+    app: $APP_NAME
+  name: $APP_NAME
+  namespace: $KUBESPHERE_NAMESPACE
 spec:
   ports:
     - name: http
@@ -62,6 +62,6 @@ spec:
       targetPort: 80
       nodePort: 31919
   selector:
-    app: wenda-webui
+    app: $APP_NAME
   sessionAffinity: None
   type: NodePort
