@@ -22,7 +22,7 @@ spec:
         app: $HARBOR_CREDENTIAL
     spec:
       imagePullSecrets:
-        - name: harber-docker-hub  #提前在项目下配置访问阿里云的账号密码
+        - name: harber-docker-registry  #提前在项目下配置访问阿里云的账号密码
       containers:
         - image: $REGISTRY/$DOCKERHUB_NAMESPACE/$APP_NAME:SNAPSHOT-$BUILD_NUMBER
           #         readinessProbe:
