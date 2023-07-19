@@ -19,7 +19,7 @@ spec:
   template:
     metadata:
       labels:
-        app: $HARBOR_CREDENTIAL
+        app: $APP_NAME
     spec:
       imagePullSecrets:
         - name: harber-docker-registry  #提前在项目下配置访问阿里云的账号密码
