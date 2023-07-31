@@ -259,6 +259,51 @@ const deleteMessage = (messageId: string) => {
   chatStore.deleteMessage(messageId);
 };
 
+const fileDownload = (res, filename) => {
+  let blob = new Blob([res.data]); // 将返回的数据通过Blob的构造方法，创建Blob对象
+  if ('msSaveOrOpenBlob' in navigator) {
+    window.navigator.msSaveOrOpenBlob(blob, filename); // 针对浏览器
+  } else {
+    const elink = document.createElement('a'); // 创建a标签
+    elink.download = filename;
+    elink.style.display = 'none';
+    // 创建一个指向blob的url，这里就是点击可以下载文件的根结
+    elink.href = URL.createObjectURL(blob);
+    document.body.appendChild(elink);
+    elink.click();
+    URL.revokeObjectURL(elink.href); //移除链接
+    document.body.removeChild(elink); //移除a标签
+  }
+}
+
+//生成PPT
+const genPPT = async (content: string) => {
+  let response
+  try {
+    response = await axios
+        .post(import.meta.env.VITE_WENDA_URL + "/api/genppt", {
+          content: content,
+        })
+    console.log(response)
+    axios({
+      url: import.meta.env.VITE_WENDA_URL + "/api/downloadppt?outputfile=" + response.data,
+      method: 'get',
+      responseType: 'blob'
+    }).then(response => {
+      const url = window.URL.createObjectURL(new Blob([response.data]));
+      const link = document.createElement('a');
+      link.href = url;
+      link.setAttribute('download', 'output.pptx');
+      document.body.appendChild(link);
+      link.click();
+    });
+    // fileDownload(response, 'output.pptx')
+  }catch(e){
+    ElMessage.warning("生成PPT出错");
+  }
+
+};
+
 //收到消息自动滚动到底部
 const chatScroll = ref(null);
 const chatInner = ref(null);
@@ -423,6 +468,14 @@ const copyLastMessage = () => {
                 plain
                 @click="copy(message.content)"
                 >复制</el-button
+              >
+              <el-button
+                  size="small"
+                  type="primary"
+                  plain
+                  v-if="message.role == 'AI' && chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '你将作为一个PPT文档生成器去完成下面的内容'"
+                  @click="genPPT(message.content)"
+              >生成PPT</el-button
               >
               <el-button
                 size="small"
