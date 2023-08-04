@@ -40,6 +40,7 @@ declare module '@vue/runtime-core' {
     HelloWorld: typeof import('./components/HelloWorld.vue')['default']
     Loading: typeof import('./components/Loading.vue')['default']
     Logo: typeof import('./components/logo.vue')['default']
+    MarkmapSVG: typeof import('./components/markmapSVG.vue')['default']
     PDFViewer: typeof import('./components/PDFViewer.vue')['default']
     Settings: typeof import('./components/Settings.vue')['default']
   }

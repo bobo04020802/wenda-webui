@@ -1,6 +1,9 @@
 import {defineStore, storeToRefs} from "pinia";
 import {nanoid} from "nanoid";
 import axios from "axios";
+import { Transformer } from 'markmap-lib';
+import { Markmap } from 'markmap-view/dist/index.esm';
+import {ref} from "vue";
 export const useDocChatStore = defineStore("docChat", {
   state: () => ({
     //文档对话的知识库id
@@ -832,6 +835,21 @@ export const useDocChatStore = defineStore("docChat", {
                   })
                 }
               }
+            }
+          })
+        },
+      },
+      {
+        name: "思维导图",
+        description: "根据主题帮我出一个思维导图",
+        question: "根据主题帮我出一个思维导图",
+        fun_: async (chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry) => {
+          chatStore.sendMessage("我的问题是：“" + chatStore.inputMessage + "”。你知道什么是markdown的源代码吧？是的话，你不用帮我生成思维导图，你只需要根据我的问题，生成一份关于我问题主题大纲的markdown源代码，我会用你的markdown代码来生成思维导图。在markdown格式中，# 表示中央主题， ## 表示主要主题，### 表示子主题，- 表示叶子节点。你不需要用代码块（```）将markdown括起来，直接输出结果，不需要额外的声明。请参照以上格式进行回复。",  async (data: any) => {
+            if (data != "{{successEnd}}") {
+              lastMsg.content = data;
+            } else {
+              chatStore.inputMessage = "";
+              chatStore.isSending = false;
             }
           })
         },

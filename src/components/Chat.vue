@@ -303,6 +303,12 @@ const genPPT = async (content: string) => {
   }
 
 };
+const dialogFormVisible = ref<boolean>(false)
+const activeswdt = ref<string>('')
+const openSWDT = (content: string) => {
+  dialogFormVisible.value=true
+  activeswdt.value = content
+};
 
 //收到消息自动滚动到底部
 const chatScroll = ref(null);
@@ -442,6 +448,7 @@ const copyLastMessage = () => {
             "
           >
             {{ message.content }}
+            <br>
           </div>
           <el-popover
             placement="top"
@@ -469,6 +476,15 @@ const copyLastMessage = () => {
                 @click="copy(message.content)"
                 >复制</el-button
               >
+              <el-button
+                  size="small"
+                  type="primary"
+                  plain
+                  v-if="message.role == 'AI' && (message.content ? message.content.indexOf('```')> -1 : false ) && chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据主题帮我出一个思维导图'"
+                  @click="openSWDT(message.content)"
+              >思维导图</el-button
+              >
+
               <el-button
                   size="small"
                   type="primary"
@@ -521,6 +537,7 @@ const copyLastMessage = () => {
                     :text="message.content"
                     style="background-color: transparent"
                   ></v-md-preview>
+
                   <div
                       v-if="message.source || message.source? message.source.length>0 : false"
                     style="
@@ -576,6 +593,9 @@ const copyLastMessage = () => {
           </el-popover>
         </div>
       </transition>
+      <el-dialog append-to-body v-model="dialogFormVisible" title="思维导图" style="height: 60vh;">
+        <MarkmapSVG :value="activeswdt"></MarkmapSVG>
+      </el-dialog>
     </div>
   </el-scrollbar>
   <div
