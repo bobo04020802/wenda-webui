@@ -176,7 +176,7 @@
 </template>
 
 <script lang="ts" setup>
-import imgRobot from "~/assets/robot.jpg";
+import imgRobot from "~/assets/robot.png";
 
 import { ref, watch } from "vue";
 import { storeToRefs } from "pinia";

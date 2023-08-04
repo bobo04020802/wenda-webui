@@ -158,4 +158,7 @@ appStore.$subscribe((_, state) => {
 .vuepress-markdown-body {
   color: var(--mdcolor) !important;
 }
+div .ep-main {
+  padding-right: 0px;
+}
 </style>

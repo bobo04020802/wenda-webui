@@ -600,7 +600,7 @@ const copyLastMessage = () => {
   </el-scrollbar>
   <div
     style="position: fixed; bottom: 10px"
-    :style="{ width: showSide ? 'calc(100% - 340px)' : 'calc(100% - 40px)' }"
+    :style="{ width: showSide ? 'calc(100% - 370px)' : 'calc(100% - 40px)' }"
   >
     <el-input
       :rows="4"
