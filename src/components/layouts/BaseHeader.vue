@@ -83,7 +83,7 @@ const toggleSide = () => {
       <button
         class="border-none bg-transparent cursor-pointer"
         @click="about()"
-        style="margin-right: 20px"
+        style="margin-right: 20px; display: none"
       >
         <span v-if="!isMobile">关于</span>
         <i v-if="isMobile" inline-flex i="ep-star" />

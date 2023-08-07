@@ -227,7 +227,7 @@ const getKnowledge = (parentMessageId: string, isRetry: boolean) => {
     let cuttitem = chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)
     let valueopt = docChatStore.valueOptions.find((item) => item.question === cuttitem.converType);
     // console.log(valueopt)
-    if(valueopt.fun_ != undefined && typeof valueopt.fun_ == 'function'){
+    if(valueopt != undefined && valueopt.fun_ != undefined && typeof valueopt.fun_ == 'function'){
       let tempfun_ = valueopt.fun_;
       tempfun_(chatStore,lastMsg,find_RomanNumerals,sendtime,parentMessageId,messageList,isRetry);
     }else{
