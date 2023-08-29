@@ -3,7 +3,7 @@
   "private": true,
   "version": "0.1.0",
   "scripts": {
-    "dev": "vite --host 0.0.0.0 --port 5173",
+    "dev": "vite --host 0.0.0.0 --port 5174",
     "build": "vite build",
     "build:pro": "node --max_old_space_size=8192 ./node_modules/vite/bin/vite.js build --mode pro",
     "generate": "vite-ssg build",
@@ -16,7 +16,9 @@
     "axios": "^1.3.5",
     "d3": "^7.8.5",
     "dayjs": "^1.11.7",
+    "echarts": "^5.4.3",
     "element-plus": "^2.3.3",
+    "markdown-it-vue": "file:./markdown-it-vue",
     "markmap-common": "^0.14.2",
     "markmap-lib": "0.14.4",
     "markmap-view": "0.14.4",
@@ -26,7 +28,8 @@
     "vue": "^3.2.47",
     "vue-clipboard3": "^2.0.0",
     "vue-demi": "^0.13.11",
-    "vue3-pdfjs": "^0.1.6"
+    "vue3-pdfjs": "^0.1.6",
+    "xlsx": "https://cdn.sheetjs.com/xlsx-0.20.0/xlsx-0.20.0.tgz"
   },
   "devDependencies": {
     "@iconify-json/ep": "^1.1.10",

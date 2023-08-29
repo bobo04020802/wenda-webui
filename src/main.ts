@@ -1,6 +1,5 @@
 import { createApp } from "vue";
 import App from "./App.vue";
-
 // import "~/styles/element/index.scss";
 
 // import ElementPlus from "element-plus";
@@ -27,6 +26,7 @@ import '@kangc/v-md-editor/lib/theme/style/vuepress.css';
 import Prism from 'prismjs';
 // 代码高亮
 import 'prismjs/components/prism-json';
+
 // 选择使用主题
 VMdPreview.use(vuepressTheme, {
   Prism,

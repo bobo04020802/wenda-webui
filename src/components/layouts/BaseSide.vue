@@ -21,7 +21,7 @@
 
     <!-- 机器人logo -->
     <div
-      style="position: absolute; opacity: 1; top: 0px; right: 0px"
+      style="position: absolute; opacity: 1; top: 0px; right: 0px; z-index: 999"
       v-if="!isMobile"
     >
       <img
@@ -132,19 +132,15 @@
     </div>
     <div
       style="
-        display: flex;
-        justify-content: center;
-        flex-direction: column;
-        align-items: center;
-        width: 100%;
+        display: flex; justify-content: space-evenly; align-items: center; width: 100%; margin-top: 10px
       "
     >
       <el-button
         @click="chatStore.openConversationDialog()"
-        style="margin-bottom: 5px"
+        style="width: 35%; height: 45px;  border: none"
         >新建会话</el-button
       >
-      <el-button @click="chatDocument = true" style="margin: 0"
+      <el-button @click="chatDocument = true" style="width: 35%; height: 45px; border: none"
         >文档对话</el-button
       >
     </div>

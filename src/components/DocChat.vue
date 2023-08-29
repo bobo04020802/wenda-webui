@@ -322,7 +322,7 @@ const copyLastMessage = () => {
                     alt=""
                     style="width: 25px; mix-blend-mode: multiply"
                     :style="{
-                      filter: isDark ? 'invert(1)' : 'invert(0)',
+                      filter: isDark ? 'invert(0)' : 'invert(0)',
                     }"
                   />
                 </div>

@@ -5,3 +5,4 @@ VITE_APP_TITLE=明镜策源
 VITE_APP_SUBTITLE=私有化政策辅助模型
 #AI的头像
 VITE_AI_AVATAR=/head.png
+VITE_WENDA_MODLE_NAME=glm6b

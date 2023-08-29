@@ -61,9 +61,11 @@ export default {
 
     const update = async () => {
       const transformer = new Transformer();
-      var matchReg = /(?<=```).*?(?=.```)/igs;
-      var svgvalue = value.match(matchReg)
-      const { root } = transformer.transform(svgvalue[0].replace('shell',''));
+      // var matchReg = /(?<=```).*?(?=.```)/igs;
+      // var svgvalue = value.match(matchReg)
+      // const { root } = transformer.transform(svgvalue[0].replace('shell','').replace('markdown',''));
+      console.log(value)
+      const { root } = transformer.transform(value.replace('```shell','').replace('```markdown','').replace('```',''));
       console.log('root', root)
       await mm.value.setData(root);
       mm.value.fit();

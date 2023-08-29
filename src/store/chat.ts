@@ -3,6 +3,8 @@ import { nanoid } from "nanoid";
 import dayjs from "dayjs";
 import axios from "axios";
 import { ElMessage, ElMessageBox } from "element-plus";
+import {useDocChatStore} from "~/store/docChat";
+
 export const useChatStore = defineStore("chat", {
   state: () => ({
     //当前激活的对话id
@@ -52,7 +54,7 @@ export const useChatStore = defineStore("chat", {
           {
             messageId: "123123",
             role: "AI",
-            content: "你好，有什么我能帮助您的？",
+            content: "你好，有什么我能帮助您的？我可以通过自身的模型进行回答，也可以通过打开右上角知识库按钮利用本地知识库进行学习后回答。",
             time: "2023-01-02 12:00:00",
           },
         ],
@@ -89,15 +91,16 @@ export const useChatStore = defineStore("chat", {
     //打开创建会话窗口
     openConversationDialog(){
       let that = this;
-      ElMessageBox.confirm("确定要新增吗？", "提示", {
-        type: "warning",
-      })
-          .then(() => {
-            that.editVisible =true
-          })
-          .catch(() => {
-            ElMessage.success("取消成功");
-          });
+      that.editVisible =true
+      // ElMessageBox.confirm("确定要新增吗？", "提示", {
+      //   type: "warning",
+      // })
+      //     .then(() => {
+      //       that.editVisible =true
+      //     })
+      //     .catch(() => {
+      //       ElMessage.success("取消成功");
+      //     });
     },
     //关闭会话窗口
     cancel() {
@@ -118,13 +121,15 @@ export const useChatStore = defineStore("chat", {
           time: time,
           msgCount: 1,
         });
+        let docChatStore = useDocChatStore()
+        let valueopt = docChatStore.valueOptions.find((item) => item.question === this.dialogForm.converType)
         this.messageList.unshift({
           conversationId: conversationId,
           history: [
             {
               messageId: nanoid(),
               role: "AI",
-              content: "你好，有什么我能帮助您的？",
+              content: valueopt.description,
               time: time,
             },
           ],

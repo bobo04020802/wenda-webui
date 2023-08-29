@@ -11,6 +11,9 @@ import { storeToRefs } from "pinia";
 import { useDark, useToggle } from "@vueuse/core";
 import { nanoid } from "nanoid";
 import dayjs from "dayjs";
+import * as XLSX from 'xlsx'
+import MarkdownItVue from "markdown-it-vue"
+import 'markdown-it-vue/dist/markdown-it-vue.css'
 
 import useClipboard from "vue-clipboard3";
 const { toClipboard } = useClipboard();
@@ -303,11 +306,36 @@ const genPPT = async (content: string) => {
   }
 
 };
+
+//生成xlsx
+const genEXCEL =  async (content: string, key) => {
+  const tableDom = document.querySelector('#'+key).querySelector('table')
+  // console.log(tableDom)
+  const workbook = XLSX.utils.table_to_book(tableDom)
+  // console.log(workbook)
+  //  文件名带后缀
+  XLSX.writeFileXLSX(workbook, '数据.xlsx')
+};
+
 const dialogFormVisible = ref<boolean>(false)
 const activeswdt = ref<string>('')
+const activeechart = ref<object>({})
+const dialogEchartVisible = ref<boolean>(false)
 const openSWDT = (content: string) => {
   dialogFormVisible.value=true
   activeswdt.value = content
+};
+
+const openEcharts = (content: string) => {
+  dialogEchartVisible.value=true
+  let matchReg = /(?<=```echarts).*?(?=.```)/igs;
+  let svgvalue = content.match(matchReg)
+  let regR = /\r/g;
+  let regN = /\n/g;
+  console.log('bbbbb===',svgvalue[0].replace(regR,"").replace(regN,"").replaceAll("\'", '\"').replaceAll(" ", ''))
+  // console.log(svgvalue[0].replace(regR,"").replace(regN,"").replaceAll("\"", '').replaceAll(" ", ''))
+  activeechart.value = JSON.parse('{"width":500,"height":400,"xAxis":{"type":"category","data":["2017","2018","2019","2020"]},"yAxis":{"type":"value"},"series":[{"name":"GDP","type":"bar","data":[5385.72,5291.25,5085.83,4861.48]},{"name":"通货膨胀率","type":"bar","data":[6.1,6.1,-2.6,-2.7]},{"name":"失业率","type":"bar","data":[5.2,5.3,5.8,5.7]}]}')
+  console.log('aaaaaaaaaa===',activeechart.value)
 };
 
 //收到消息自动滚动到底部
@@ -410,6 +438,39 @@ const copyLastMessage = () => {
     ElMessage.warning("没有取到上条消息！");
   }
 };
+let proofImage;
+const getFile = (file, fileList) => {
+  getBase64(file.raw).then(res => {
+    const params = res
+    console.log(params)
+    chatStore.inputMessage = params
+  })
+};
+
+const getBase64 = (file) => {
+  return new Promise(function (resolve, reject) {
+    const reader = new FileReader()
+    let imgResult = ''
+    reader.readAsDataURL(file)
+    reader.onload = function () {
+      imgResult = reader.result
+    }
+    reader.onerror = function (error) {
+      reject(error)
+    }
+    reader.onloadend = function () {
+      resolve(imgResult)
+    }
+  })
+};
+
+const handleUploadRemove = (file, fileList) => {
+  chatStore.inputMessage = ''
+};
+
+const handlePictureCardPreview = (file) => {
+};
+
 
 //const { circleUrl, squareUrl, sizeList } = toRefs(state);
 </script>
@@ -480,7 +541,7 @@ const copyLastMessage = () => {
                   size="small"
                   type="primary"
                   plain
-                  v-if="message.role == 'AI' && (message.content ? message.content.indexOf('```')> -1 : false ) && chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据主题帮我出一个思维导图'"
+                  v-if="message.role == 'AI' && (message.content ? message.content.indexOf('```')> -1 : false ) && (chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据主题帮我出一个思维导图' || chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据主题帮我出一个产业链图谱')"
                   @click="openSWDT(message.content)"
               >思维导图</el-button
               >
@@ -489,10 +550,25 @@ const copyLastMessage = () => {
                   size="small"
                   type="primary"
                   plain
-                  v-if="message.role == 'AI' && chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '你将作为一个PPT文档生成器去完成下面的内容'"
+                  v-if="message.role == 'AI' && (message.content ? message.content.indexOf('```echarts')> -1 : false ) && chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据主题帮我出一个echart图'"
+                  @click="openEcharts(message.content)"
+              >生成图表</el-button>
+
+              <el-button
+                  size="small"
+                  type="primary"
+                  plain
+                  v-if="message.role == 'AI' && (chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '你将作为一个PPT文档生成器去完成下面的内容' || chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据提纲生成ppt')"
                   @click="genPPT(message.content)"
               >生成PPT</el-button
               >
+              <el-button
+                  size="small"
+                  type="primary"
+                  plain
+                  v-if="message.role == 'AI' && (chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '我希望你能提取下面内容中的数字以及数值对应的指标，如果不存在则回答:无，指标和数值中不能涵盖符号，如果有符号请拆分为多个指标和数值，指标内容不重复，按照表格形式回复，表格有两列且表头为(指标，数据)：')"
+                  @click="genEXCEL(message.content,message.messageId)"
+              >生成excel</el-button>
               <el-button
                 size="small"
                 type="warning"
@@ -515,7 +591,7 @@ const copyLastMessage = () => {
                     alt=""
                     style="width: 25px; mix-blend-mode: multiply"
                     :style="{
-                      filter: isDark ? 'invert(1)' : 'invert(0)',
+                      filter: isDark ? 'invert(0)' : 'invert(0)',
                     }"
                   />
                 </div>
@@ -536,7 +612,12 @@ const copyLastMessage = () => {
                   <v-md-preview
                     :text="message.content"
                     style="background-color: transparent"
+                    :id="message.messageId"
+                    v-if="message.content.indexOf('data:image/')<0"
                   ></v-md-preview>
+                  <img :src="message.content" style="width: 100%" v-if="message.content.indexOf('data:image/')>-1" />
+<!--                  <MarkdownItVue :id="message.messageId" class="md-body" :content="message.content" v-if="message.content.indexOf('```echarts')>-1" />-->
+<!--                  <MarkdownIt :markdid_="'a'+message.messageId" class="md-body" :value="message.content" v-if="message.content.indexOf('```echarts')>-1"/>-->
 
                   <div
                       v-if="message.source || message.source? message.source.length>0 : false"
@@ -593,8 +674,11 @@ const copyLastMessage = () => {
           </el-popover>
         </div>
       </transition>
-      <el-dialog append-to-body v-model="dialogFormVisible" title="思维导图" style="height: 60vh;">
+      <el-dialog append-to-body v-model="dialogFormVisible" v-if="dialogFormVisible" title="思维导图" style="height: 60vh;">
         <MarkmapSVG :value="activeswdt"></MarkmapSVG>
+      </el-dialog>
+      <el-dialog append-to-body v-model="dialogEchartVisible" v-if="dialogEchartVisible" title="图表" style="height: 60vh;">
+        <CurrentEcharts :myOption="activeechart"></CurrentEcharts>
       </el-dialog>
     </div>
   </el-scrollbar>
@@ -611,9 +695,23 @@ const copyLastMessage = () => {
       input-style="padding-right: 120px"
       @keyup.up="copyLastMessage()"
       @keyup.ctrl.enter="sendMessage()"
-      :disabled="chatStore.isSending"
+      :disabled="chatStore.isSending || chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据您上传的图片分析里面的内容'"
     >
     </el-input>
+    <el-upload
+        v-if="chatStore.conversationList.find((item) => item.conversationId === chatStore.activeConversationId)?.converType === '根据您上传的图片分析里面的内容'"
+        style="position: absolute;top: 30px;left: 20px"
+        action=''
+        accept=".jpg, .png"
+        :limit="1"
+        :auto-upload="false"
+        :file-list="fileList"
+        :on-change="getFile"
+        :on-preview="handlePictureCardPreview"
+        :on-remove="handleUploadRemove"
+    >
+      <el-button size="small" plain :color="chatStore.isSending ? '#ef534f' : '#79b7d1'" round type="primary" @click="uploadimg">选择图片上传</el-button>
+    </el-upload>
     <el-button
       round
       :color="chatStore.isSending ? '#ef534f' : '#79b7d1'"
